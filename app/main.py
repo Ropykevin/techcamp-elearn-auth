@@ -3,11 +3,13 @@ from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
 from dotenv import load_dotenv
+import requests
 
 app = Flask(__name__)
 app.secret_key = 'YOUR_SECRET_KEY'
 oauth = OAuth(app)
 
+API_ENDPOINT = 'http: // 167.71.54.75: 8082/trainees'
 load_dotenv()
 # OAuth 2 client setup
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
@@ -44,39 +46,32 @@ def login():
 def callback():
     token = oauth.google.authorize_access_token()
     google_user = oauth.google.parse_id_token(token, nonce=session["nonce"])
-    return google_user['email']
-
-
-# @app.route("/login/callback")
-# def callback():
-#     token = oauth.google.authorize_access_token()
-#     google_user = oauth.google.parse_id_token(token, nonce=session["nonce"])
-#     email = google_user['email']
-#     full_name = google_user['name']
-#     # all trainees
-#     response = requests.get(API_ENDPOINT)
-#     if response.status_code != 200:
-#         return "Error fetching trainees from external API", 500
-#     trainees = response.json()
-#     # Check if email exists in the list of trainees
-#     user = next(
-#         (trainee for trainee in trainees if trainee['email'] == email), None)
-#     if user:
-#         return user
-#     else:
-#         # If user does not exist
-#         payload = {
-#             "email": email,
-#             "firebaseId": "web",
-#             "fullName": full_name,
-#             "id": 0,
-#             "latestDeviceId": "web"
-#         }
-#         response = requests.post(API_ENDPOINT, json=payload)
-#         if response.status_code != 201:
-#             return "Error storing user in external API", 500
-#         user = response.json()
-#         return user
+    email = google_user['email']
+    full_name = google_user['name']
+    # all trainees
+    response = requests.get(API_ENDPOINT)
+    if response.status_code != 200:
+        return "Error fetching trainees from external API", 500
+    trainees = response.json()
+    # Check if email exists in the list of trainees
+    user = next(
+        (trainee for trainee in trainees if trainee['email'] == email), None)
+    if user:
+        return user
+    else:
+        # If user does not exist
+        payload = {
+            "email": email,
+            "firebaseId": "web",
+            "fullName": full_name,
+            "id": 0,
+            "latestDeviceId": "web"
+        }
+        response = requests.post(API_ENDPOINT, json=payload)
+        if response.status_code != 201:
+            return "Error storing user in external API", 500
+        user = response.json()
+        return user
 
 
 if __name__ == "__main__":
