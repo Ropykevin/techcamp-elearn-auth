@@ -5,26 +5,27 @@ import os
 from dotenv import load_dotenv
 import requests
 
+# Load environment variables from .env file
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = 'YOUR_SECRET_KEY'
+# Load the secret key from environment variable
+app.secret_key = 'uuuuuuuuuuuuuu'
 oauth = OAuth(app)
 
-API_ENDPOINT = 'http: // 167.71.54.75: 8082/trainees'
-load_dotenv()
+API_ENDPOINT = 'http://167.71.54.75:8082/trainees'
+
 # OAuth 2 client setup
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
-GOOGLE_DISCOVERY_URL = (
-    "https://accounts.google.com/.well-known/openid-configuration")
-print(GOOGLE_CLIENT_ID)
+GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
+
 oauth.register(
     name='google',
     client_id=GOOGLE_CLIENT_ID,
     client_secret=GOOGLE_CLIENT_SECRET,
     server_metadata_url=GOOGLE_DISCOVERY_URL,
-    client_kwargs={
-        'scope': 'openid email profile'
-    }
+    client_kwargs={'scope': 'openid email profile'}
 )
 
 
@@ -35,9 +36,7 @@ def index():
 
 @app.route('/login')
 def login():
-    # put a url with an https here
-    redirect_uri = "https://learn.techcamp.co.ke/login/callback"
-    print(redirect_uri)
+    redirect_uri = url_for('callback', _external=True, _scheme='https')
     session["nonce"] = generate_token()
     return oauth.google.authorize_redirect(redirect_uri, nonce=session["nonce"])
 
@@ -48,18 +47,20 @@ def callback():
     google_user = oauth.google.parse_id_token(token, nonce=session["nonce"])
     email = google_user['email']
     full_name = google_user['name']
-    # all trainees
+
+    # Fetch all trainees
     response = requests.get(API_ENDPOINT)
     if response.status_code != 200:
         return "Error fetching trainees from external API", 500
     trainees = response.json()
+
     # Check if email exists in the list of trainees
     user = next(
         (trainee for trainee in trainees if trainee['email'] == email), None)
     if user:
         return user
     else:
-        # If user does not exist
+        # If user does not exist, create a new user
         payload = {
             "email": email,
             "firebaseId": "web",
