@@ -36,7 +36,7 @@ def index():
 
 @app.route('/login')
 def login():
-    redirect_uri = url_for('callback', _external=True, _scheme='https')
+    redirect_uri = 'https://learn.techcamp.co.ke/login/callback'
     session["nonce"] = generate_token()
     return oauth.google.authorize_redirect(redirect_uri, nonce=session["nonce"])
 
