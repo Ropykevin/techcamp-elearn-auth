@@ -3,9 +3,7 @@ from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
 from dotenv import load_dotenv
-import requests
 
-API_ENDPOINT = 'http://167.71.54.75:8082/'
 app = Flask(__name__)
 app.secret_key = 'YOUR_SECRET_KEY'
 oauth = OAuth(app)
@@ -35,8 +33,7 @@ def index():
 
 @app.route('/login')
 def login():
-    # put a url with an https here
-    redirect_uri = "https://learn.techcamp.co.ke/login/callback"
+    redirect_uri = ""  # put a url with an https here
     print(redirect_uri)
     session["nonce"] = generate_token()
     return oauth.google.authorize_redirect(redirect_uri, nonce=session["nonce"])
@@ -46,22 +43,7 @@ def login():
 def callback():
     token = oauth.google.authorize_access_token()
     google_user = oauth.google.parse_id_token(token, nonce=session["nonce"])
-    email = google_user['email']
-    full_name = google_user['name']
-
-    # Fetch all trainees
-    response = requests.get(f"{API_ENDPOINT}trainees")
-    if response.status_code != 200:
-        return "Error fetching trainees from external API", 500
-    trainees = response.json()
-
-    # Check if email exists in the list of trainees
-    user = next(
-        (trainee for trainee in trainees if trainee['email'] == email), None)
-    if user:
-        return user
-    else:
-        return user
+    return google_user['email']
 
 
 if __name__ == "__main__":
