@@ -61,18 +61,6 @@ def callback():
     if user:
         return user
     else:
-        # If user does not exist, create a new user
-        payload = {
-            "email": email,
-            "firebaseId": "web",
-            "fullName": full_name,
-            "id": 0,
-            "latestDeviceId": "web"
-        }
-        response = requests.post(f"{API_ENDPOINT}trainees", json=payload)
-        if response.status_code != 201:
-            return "Error storing user in external API", 500
-        user = response.json()
         return user
 
 
