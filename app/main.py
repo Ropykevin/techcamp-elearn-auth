@@ -5,27 +5,26 @@ import os
 from dotenv import load_dotenv
 import requests
 
-# Load environment variables from .env file
-load_dotenv()
-
+API_ENDPOINT = 'http://167.71.54.75:8082/'
 app = Flask(__name__)
-# Load the secret key from environment variable
-app.secret_key = 'uuuuuuuuuuuuuu'
+app.secret_key = 'YOUR_SECRET_KEY'
 oauth = OAuth(app)
 
-API_ENDPOINT = 'http://167.71.54.75:8082/trainees'
-
+load_dotenv()
 # OAuth 2 client setup
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
-GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
-
+GOOGLE_DISCOVERY_URL = (
+    "https://accounts.google.com/.well-known/openid-configuration")
+print(GOOGLE_CLIENT_ID)
 oauth.register(
     name='google',
     client_id=GOOGLE_CLIENT_ID,
     client_secret=GOOGLE_CLIENT_SECRET,
     server_metadata_url=GOOGLE_DISCOVERY_URL,
-    client_kwargs={'scope': 'openid email profile'}
+    client_kwargs={
+        'scope': 'openid email profile'
+    }
 )
 
 
@@ -36,7 +35,8 @@ def index():
 
 @app.route('/login')
 def login():
-    redirect_uri = 'https://learn.techcamp.co.ke/login/callback'
+    redirect_uri = ""  # put a url with an https here
+    print(redirect_uri)
     session["nonce"] = generate_token()
     return oauth.google.authorize_redirect(redirect_uri, nonce=session["nonce"])
 
@@ -49,7 +49,7 @@ def callback():
     full_name = google_user['name']
 
     # Fetch all trainees
-    response = requests.get(API_ENDPOINT)
+    response = requests.get(f"{API_ENDPOINT}trainees")
     if response.status_code != 200:
         return "Error fetching trainees from external API", 500
     trainees = response.json()
@@ -68,7 +68,7 @@ def callback():
             "id": 0,
             "latestDeviceId": "web"
         }
-        response = requests.post(API_ENDPOINT, json=payload)
+        response = requests.post(f"{API_ENDPOINT}trainees", json=payload)
         if response.status_code != 201:
             return "Error storing user in external API", 500
         user = response.json()
