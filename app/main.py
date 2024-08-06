@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.secret_key = 'YOUR_SECRET_KEY'
 oauth = OAuth(app)
 
-API_ENDPOINT = 'http://167.71.54.75:8082/trainees'
+API_ENDPOINT = 'http://167.71.54.75:8082/trainees/'
 load_dotenv()
 # OAuth 2 client setup
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
@@ -27,11 +27,9 @@ oauth.register(
     }
 )
 
-
 @app.route('/')
 def index():
     return 'You are not logged in.'
-
 
 @app.route('/login')
 def login():
@@ -39,7 +37,6 @@ def login():
     print(redirect_uri)
     session["nonce"] = generate_token()
     return oauth.google.authorize_redirect(redirect_uri, nonce=session["nonce"])
-
 
 @app.route("/login/callback")
 def callback():
@@ -69,7 +66,6 @@ def callback():
         response.set_cookie('user_email', email)
         response.set_cookie('user_full_name', full_name)
         return response
-
 
 if __name__ == "__main__":
     app.run(debug=True)
