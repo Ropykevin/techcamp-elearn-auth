@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 app = Flask(__name__)
-app.secret_key = 'gggggggg'
+app.secret_key = 'YOUR_SECRET_KEY'
 oauth = OAuth(app)
 
 load_dotenv()
@@ -25,9 +25,11 @@ oauth.register(
     }
 )
 
+
 @app.route('/')
 def index():
     return 'You are not logged in.'
+
 
 @app.route('/login')
 def login():
