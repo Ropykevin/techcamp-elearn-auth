@@ -1,15 +1,13 @@
-from flask import Flask, redirect, url_for, render_template, session, make_response
+from flask import Flask, redirect, url_for, render_template, session
 from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
 from dotenv import load_dotenv
-import requests
 
 app = Flask(__name__)
 app.secret_key = 'YOUR_SECRET_KEY'
 oauth = OAuth(app)
 
-API_ENDPOINT = 'http://167.71.54.75:8082/trainees/'
 load_dotenv()
 # OAuth 2 client setup
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
@@ -27,23 +25,26 @@ oauth.register(
     }
 )
 
+
 @app.route('/')
 def index():
     return 'You are not logged in.'
 
+
 @app.route('/login')
 def login():
-    redirect_uri = "https://learn.techcamp.co.ke/login/callback"
+    redirect_uri = ""  # put a url with an https here
     print(redirect_uri)
     session["nonce"] = generate_token()
     return oauth.google.authorize_redirect(redirect_uri, nonce=session["nonce"])
+
 
 @app.route("/login/callback")
 def callback():
     token = oauth.google.authorize_access_token()
     google_user = oauth.google.parse_id_token(token, nonce=session["nonce"])
-    email = google_user['email']
-    return email
+    return google_user['email']
+
 
 if __name__ == "__main__":
     app.run(debug=True)
