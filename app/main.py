@@ -43,29 +43,7 @@ def callback():
     token = oauth.google.authorize_access_token()
     google_user = oauth.google.parse_id_token(token, nonce=session["nonce"])
     email = google_user['email']
-    full_name = google_user['name']
-    response = requests.get(f"{API_ENDPOINT}?email={email}")
-    if response.status_code == 200 and response.json():
-        user = response.json()
-        return f"Hello, {user['fullName']}! You have logged in successfully."
-    else:
-        payload = {
-            "email": email,
-            "firebaseId": 'web',
-            "fullName": full_name,
-            "id": 0,
-            "latestDeviceId": "web"
-        }
-        response = requests.post(API_ENDPOINT, json=payload)
-        if response.status_code != 201:
-            return "Error storing user in external API", 500
-        user = response.json()
-        # Set cookies with user information
-        response = make_response(
-            f"Hello, {user['fullName']}! You have been registered and logged in successfully.")
-        response.set_cookie('user_email', email)
-        response.set_cookie('user_full_name', full_name)
-        return response
+    return email
 
 if __name__ == "__main__":
     app.run(debug=True)
